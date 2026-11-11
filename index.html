@@ -577,7 +577,38 @@ h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: c
         c.hidden = true;
         c.setAttribute('aria-hidden', 'true');
         b.appendChild(c);
-        b.addEventListener('click', function () { tap(o.id); });
+        var holdTimer = null;
+        var longPressed = false;
+        function clearHold() {
+          if (holdTimer !== null) {
+            clearTimeout(holdTimer);
+            holdTimer = null;
+          }
+        }
+        b.addEventListener('pointerdown', function (event) {
+          if (event.button !== undefined && event.button !== 0) return;
+          longPressed = false;
+          clearHold();
+          holdTimer = setTimeout(function () {
+            holdTimer = null;
+            longPressed = true;
+            removeTap(o.id);
+          }, 550);
+        });
+        b.addEventListener('pointerup', clearHold);
+        b.addEventListener('pointerleave', clearHold);
+        b.addEventListener('pointercancel', function () {
+          clearHold();
+          longPressed = false;
+        });
+        b.addEventListener('contextmenu', function (event) { event.preventDefault(); });
+        b.addEventListener('click', function () {
+          if (longPressed) {
+            longPressed = false;
+            return;
+          }
+          tap(o.id);
+        });
         row.appendChild(b);
         refs[o.id] = { btn: b, count: c, label: o.label };
       });
@@ -634,6 +665,26 @@ h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: c
     renderCounts();
     pulse(id);
     announce(refs[id].label + ', ' + count(id));
+  }
+
+  function removeTap(id) {
+    if (count(id) <= 0) return;
+    state.tally[id] = count(id) - 1;
+    if (!state.tally[id]) delete state.tally[id];
+
+    // Keep the global Undo history consistent by removing the most recent
+    // matching tap for this option.
+    for (var i = state.undo.length - 1; i >= 0; i--) {
+      if (state.undo[i] === id) {
+        state.undo.splice(i, 1);
+        break;
+      }
+    }
+
+    if (total() === 0) state.since = null;
+    save();
+    renderCounts();
+    announce(refs[id].label + ', ' + count(id) + ' remaining');
   }
 
   function undo() {
