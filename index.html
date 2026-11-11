@@ -1,0 +1,528 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Pack Night</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=DM+Mono:wght@500&family=DM+Sans:wght@400;500;700&display=swap">
+<style>
+/* Layout: wall display, landscape, two columns. Left: title, plan, Wi-Fi. Right: tap-to-check-in board.
+   Everything is sized in --u (1% of screen width on a 16:9 screen) so it scales to any landscape display.
+   Narrow or square screens stack into one column. Single look on purpose: a dark wall display. */
+:root {
+  --ink: #11151c;
+  --glow: rgba(242, 185, 92, 0.12);
+  --panel: #181e27;
+  --panel-hi: #212a36;
+  --line: #303b4a;
+  --text: #eef1f6;
+  --muted: #a2adbd;
+  --amber: #f2b95c;
+  --amber-ink: #2a1c05;
+  --sage: #7fcdb6;
+  --sage-tint: rgba(127, 205, 182, 0.15);
+  --sage-ink: #08231c;
+  --ember: #ef8f6e;
+  --font-display: 'Bricolage Grotesque', 'Avenir Next', 'Segoe UI', system-ui, sans-serif;
+  --font-body: 'DM Sans', 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'DM Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --u: min(1vw, 1.7778vh);
+  color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  font-family: var(--font-body);
+  font-size: calc(var(--u) * 2);
+  line-height: 1.4;
+  color: var(--text);
+  background: radial-gradient(circle at 5% -5%, var(--glow), transparent calc(var(--u) * 50)) no-repeat, var(--ink);
+  padding-block: calc(var(--u) * 2.2);
+  padding-left: max(calc(var(--u) * 3), env(safe-area-inset-left, 0px));
+  padding-right: max(calc(var(--u) * 3), env(safe-area-inset-right, 0px));
+  -webkit-text-size-adjust: 100%;
+}
+button { font: inherit; color: inherit; }
+:focus-visible { outline: calc(var(--u) * 0.35) solid var(--amber); outline-offset: calc(var(--u) * 0.3); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: calc(var(--u) * 3.2);
+  height: 100%;
+  min-height: 0;
+}
+
+/* Left column */
+.left { position: relative; display: grid; grid-template-rows: 1fr auto; gap: calc(var(--u) * 2.2); min-height: 0; }
+.watermark { position: absolute; right: calc(var(--u) * -1); top: calc(var(--u) * -1); width: calc(var(--u) * 17); height: calc(var(--u) * 17); color: var(--amber); opacity: 0.07; transform: rotate(14deg); pointer-events: none; }
+.hero { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: calc(var(--u) * 1.3); min-height: 0; }
+.eyebrow { display: flex; align-items: center; gap: calc(var(--u) * 0.9); margin: 0; font-size: calc(var(--u) * 1.7); font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--amber); }
+.eyebrow svg { width: calc(var(--u) * 2.6); height: calc(var(--u) * 2.6); }
+h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: calc(var(--u) * 7.4); line-height: 0.95; letter-spacing: -0.025em; }
+.tagline { margin: 0; max-width: calc(var(--u) * 40); font-size: calc(var(--u) * 2.5); line-height: 1.3; font-weight: 500; }
+.menu { display: flex; flex-wrap: wrap; gap: calc(var(--u) * 0.3) calc(var(--u) * 1.1); list-style: none; margin: 0; padding: 0; font-size: calc(var(--u) * 2); color: var(--muted); }
+.menu li + li::before { content: "\00b7"; margin-right: calc(var(--u) * 1.1); color: var(--amber); font-weight: 700; }
+.when { margin: calc(var(--u) * 0.4) 0 0; padding: calc(var(--u) * 0.8) calc(var(--u) * 2); border: calc(var(--u) * 0.2) solid var(--amber); border-radius: 999px; font-size: calc(var(--u) * 2.2); font-weight: 700; color: var(--amber); }
+
+.wifi { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: calc(var(--u) * 2.4); padding: calc(var(--u) * 2.2); background: var(--panel); border: calc(var(--u) * 0.15) solid var(--line); border-radius: calc(var(--u) * 2); }
+.wifi-text { display: grid; gap: calc(var(--u) * 1.4); min-width: 0; }
+.kv { display: grid; gap: calc(var(--u) * 0.2); min-width: 0; }
+.k { display: flex; align-items: center; flex-wrap: wrap; gap: calc(var(--u) * 1); font-size: calc(var(--u) * 1.5); font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.tag { padding: calc(var(--u) * 0.2) calc(var(--u) * 1); border-radius: 999px; background: var(--amber); color: var(--amber-ink); font-size: calc(var(--u) * 1.4); letter-spacing: 0.04em; text-transform: none; }
+.v { font-family: var(--font-display); font-size: calc(var(--u) * 3.6); font-weight: 700; line-height: 1.05; overflow-wrap: anywhere; }
+.v.mono { font-family: var(--font-mono); font-weight: 500; font-size: calc(var(--u) * 3.2); letter-spacing: 0.02em; }
+.qr { width: calc(var(--u) * 13); aspect-ratio: 1; display: grid; place-items: center; padding: calc(var(--u) * 0.3); background: #fff; border-radius: calc(var(--u) * 1.2); }
+.qr svg { display: block; width: 100%; height: 100%; }
+.qr-missing { padding: calc(var(--u) * 1); text-align: center; font-size: calc(var(--u) * 1.6); color: #1a2029; }
+.wifi.example .qr { opacity: 0.35; }
+
+/* Right column */
+.board { display: flex; flex-direction: column; gap: calc(var(--u) * 1.6); min-height: 0; overflow: auto; padding: calc(var(--u) * 2.4); background: var(--panel); border: calc(var(--u) * 0.15) solid var(--line); border-radius: calc(var(--u) * 2); }
+.board-head { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: calc(var(--u) * 1.5); }
+.board h2 { margin: 0; font-family: var(--font-display); font-size: calc(var(--u) * 4); font-weight: 800; letter-spacing: -0.01em; line-height: 1.1; }
+.board-head p { margin: 0; color: var(--muted); font-size: calc(var(--u) * 1.8); }
+#groups { display: grid; gap: calc(var(--u) * 1.6); }
+.group { display: grid; gap: calc(var(--u) * 1); --basis: calc(var(--u) * 10.5); }
+.group[data-id="stay"] { --basis: calc(var(--u) * 14); }
+.group[data-id="mood"] { --basis: calc(var(--u) * 8.5); }
+.group-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: calc(var(--u) * 1.2); }
+.group-head h3 { margin: 0; font-size: calc(var(--u) * 1.7); font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+.note { color: var(--muted); font-size: calc(var(--u) * 1.7); }
+.stat { margin-left: auto; color: var(--sage); font-size: calc(var(--u) * 1.8); font-weight: 700; }
+.opts { display: flex; flex-wrap: wrap; gap: calc(var(--u) * 1.2); }
+.opt { position: relative; flex: 1 1 var(--basis); min-height: max(48px, calc(var(--u) * 6.2)); padding: calc(var(--u) * 0.8) calc(var(--u) * 1.1); font-size: calc(var(--u) * 2.05); font-weight: 700; line-height: 1.15; background: var(--panel-hi); border: calc(var(--u) * 0.2) solid var(--line); border-radius: calc(var(--u) * 1.5); cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; transition: transform 0.08s ease, border-color 0.15s ease, background-color 0.15s ease; }
+.opt:active { transform: scale(0.97); }
+.opt.has { border-color: var(--sage); background: var(--sage-tint); }
+.opt.pulse { animation: pulse 0.45s ease-out; }
+@keyframes pulse { from { box-shadow: 0 0 0 0 rgba(127, 205, 182, 0.55); } to { box-shadow: 0 0 0 calc(var(--u) * 1.4) rgba(127, 205, 182, 0); } }
+.count { position: absolute; top: calc(var(--u) * -0.9); right: calc(var(--u) * -0.6); display: grid; place-items: center; min-width: calc(var(--u) * 3); height: calc(var(--u) * 3); padding: 0 calc(var(--u) * 0.7); border-radius: 999px; background: var(--sage); color: var(--sage-ink); font-size: calc(var(--u) * 1.8); font-weight: 700; font-variant-numeric: tabular-nums; }
+.board-foot { display: flex; align-items: center; flex-wrap: wrap; gap: calc(var(--u) * 1.2); margin-top: auto; }
+.since { flex: 1 1 calc(var(--u) * 12); min-width: 0; margin: 0; color: var(--muted); font-size: calc(var(--u) * 1.6); }
+.btn { min-height: max(44px, calc(var(--u) * 5)); padding: calc(var(--u) * 0.9) calc(var(--u) * 1.8); font-size: calc(var(--u) * 1.8); font-weight: 700; background: transparent; border: calc(var(--u) * 0.2) solid var(--line); border-radius: calc(var(--u) * 1.2); cursor: pointer; touch-action: manipulation; }
+.btn:disabled { opacity: 0.4; cursor: default; }
+.btn.armed { border-color: var(--ember); color: var(--ember); }
+.btn.primary { background: var(--amber); border-color: var(--amber); color: var(--amber-ink); }
+.btn.icon { display: grid; place-items: center; width: max(44px, calc(var(--u) * 5)); padding: 0; color: var(--muted); }
+.btn.icon svg { width: calc(var(--u) * 2.6); height: calc(var(--u) * 2.6); }
+
+/* Settings sheet */
+.overlay { position: fixed; inset: 0; z-index: 20; display: flex; overflow: auto; background: rgba(8, 11, 16, 0.74); padding-top: calc(var(--u) * 2 + env(safe-area-inset-top, 0px)); padding-bottom: calc(var(--u) * 2 + env(safe-area-inset-bottom, 0px)); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.sheet { width: min(100%, calc(var(--u) * 62)); margin: auto; display: grid; gap: calc(var(--u) * 1.8); padding: calc(var(--u) * 3); background: var(--panel); border: calc(var(--u) * 0.15) solid var(--line); border-radius: calc(var(--u) * 2); }
+.sheet h2 { margin: 0; font-family: var(--font-display); font-size: calc(var(--u) * 3.4); font-weight: 800; }
+.field { display: grid; gap: calc(var(--u) * 0.6); }
+.field label { font-size: calc(var(--u) * 1.5); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.field input, .field select { width: 100%; min-height: max(44px, calc(var(--u) * 6)); padding: calc(var(--u) * 1.1) calc(var(--u) * 1.5); font: inherit; font-size: max(16px, calc(var(--u) * 2.2)); color: var(--text); background: var(--ink); border: calc(var(--u) * 0.2) solid var(--line); border-radius: calc(var(--u) * 1.2); }
+.hint { margin: 0; color: var(--muted); font-size: calc(var(--u) * 1.7); }
+.sheet-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: calc(var(--u) * 1.2); }
+
+@media (prefers-reduced-motion: reduce) {
+  .opt { transition: none; }
+  .opt.pulse { animation: none; }
+}
+
+/* Narrow or square screens: one column */
+@media (max-aspect-ratio: 5/4), (max-width: 760px) {
+  :root { --u: clamp(7.5px, 1.9vw, 10px); }
+  html, body { height: auto; min-height: 100%; }
+  .stage { grid-template-columns: minmax(0, 1fr); height: auto; gap: calc(var(--u) * 2.4); }
+  .left { grid-template-rows: auto auto; }
+  .board { overflow: visible; }
+  .qr { width: calc(var(--u) * 24); }
+  .group[data-id="mood"] { --basis: calc(var(--u) * 17); }
+  .sheet { padding: calc(var(--u) * 2.4); }
+}
+@media (max-width: 560px) {
+  .wifi { grid-template-columns: minmax(0, 1fr); }
+  .qr { justify-self: center; }
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="paw" viewBox="0 0 24 24">
+    <ellipse cx="12" cy="16.2" rx="5" ry="4"/>
+    <ellipse cx="5" cy="11.2" rx="1.9" ry="2.5" transform="rotate(-18 5 11.2)"/>
+    <ellipse cx="9.2" cy="6.6" rx="2" ry="2.8" transform="rotate(-6 9.2 6.6)"/>
+    <ellipse cx="14.8" cy="6.6" rx="2" ry="2.8" transform="rotate(6 14.8 6.6)"/>
+    <ellipse cx="19" cy="11.2" rx="1.9" ry="2.5" transform="rotate(18 19 11.2)"/>
+  </symbol>
+</svg>
+
+<main class="stage">
+  <div class="left">
+    <svg class="watermark" fill="currentColor" aria-hidden="true"><use href="#paw"/></svg>
+    <header class="hero">
+      <p class="eyebrow"><svg fill="currentColor" aria-hidden="true"><use href="#paw"/></svg>Weekly open door</p>
+      <h1>Pack Night</h1>
+      <p class="tagline">Our door is open to the whole pack. Come when you can, no pressure.</p>
+      <ul class="menu">
+        <li>Movies</li><li>Music</li><li>Games</li><li>Hot tub</li><li>Snacks</li>
+      </ul>
+      <p class="when" id="when"></p>
+    </header>
+
+    <section class="wifi" id="wifi" aria-label="Wi-Fi">
+      <div class="wifi-text">
+        <div class="kv">
+          <span class="k">Wi-Fi network <span class="tag" id="wifi-tag" hidden>Example. Tap the sliders icon to add yours.</span></span>
+          <span class="v" id="ssid"></span>
+        </div>
+        <div class="kv" id="pass-row">
+          <span class="k">Password</span>
+          <span class="v mono" id="pass"></span>
+        </div>
+      </div>
+      <div class="qr" id="qr"></div>
+    </section>
+  </div>
+
+  <section class="board" aria-labelledby="board-title">
+    <div class="board-head">
+      <h2 id="board-title">Check in</h2>
+      <p>One tap per person</p>
+    </div>
+    <div id="groups"></div>
+    <div class="board-foot">
+      <p class="since" id="since"></p>
+      <button class="btn" id="undo" type="button">Undo last tap</button>
+      <button class="btn" id="reset" type="button">Reset for next week</button>
+      <button class="btn icon" id="gear" type="button" aria-label="Screen settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h9M17 7h3M4 12h3M11 12h9M4 17h11M19 17h1"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+      </button>
+    </div>
+  </section>
+</main>
+
+<div class="sr" id="live" aria-live="polite"></div>
+
+<div class="overlay" id="overlay" hidden>
+  <form class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" autocomplete="off">
+    <h2 id="sheet-title">Screen settings</h2>
+    <div class="field">
+      <label for="f-ssid">Wi-Fi name</label>
+      <input id="f-ssid" type="text" autocapitalize="none" autocorrect="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="f-pass">Wi-Fi password</label>
+      <input id="f-pass" type="text" autocapitalize="none" autocorrect="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="f-sec">Security</label>
+      <select id="f-sec">
+        <option value="WPA">WPA, WPA2 or WPA3</option>
+        <option value="nopass">Open network, no password</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="f-when">Day and time</label>
+      <input id="f-when" type="text" placeholder="Every Friday, 6 pm to late">
+    </div>
+    <div class="field">
+      <label for="f-note">Dinner note</label>
+      <input id="f-note" type="text" placeholder="Dinner around 7">
+    </div>
+    <p class="hint">Saved on this screen only. Nothing is sent anywhere.</p>
+    <div class="sheet-actions">
+      <button class="btn" id="cancel" type="button">Cancel</button>
+      <button class="btn primary" id="save" type="submit">Save</button>
+    </div>
+  </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var KEY = 'pack-night-v1';
+  var DEFAULT_WHEN = 'Every week · day and time coming soon';
+  var GROUPS = [
+    { id: 'dinner', label: 'Dinner?', opts: [['yes', "I'm eating"], ['no', 'Not tonight'], ['bring', "I'm bringing something"]] },
+    { id: 'stay', label: 'How long?', opts: [['pop', 'Stopping by'], ['stay', 'Staying a while']] },
+    { id: 'mood', label: 'In the mood for', opts: [['movie', 'Movie'], ['game', 'Game'], ['tub', 'Hot tub'], ['music', 'Music']] }
+  ];
+
+  function $(id) { return document.getElementById(id); }
+
+  function emptyTally() {
+    var t = {};
+    GROUPS.forEach(function (g) {
+      t[g.id] = {};
+      g.opts.forEach(function (o) { t[g.id][o[0]] = 0; });
+    });
+    return t;
+  }
+
+  function validPair(p) {
+    return Array.isArray(p) && p.length === 2 && typeof p[0] === 'string' && typeof p[1] === 'string' &&
+      state && state.tally[p[0]] && typeof state.tally[p[0]][p[1]] === 'number';
+  }
+
+  var state = null;
+
+  function load() {
+    var s = { ssid: '', pass: '', sec: 'WPA', when: '', note: '', tally: emptyTally(), undo: [], since: null };
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (raw) {
+        var p = JSON.parse(raw);
+        if (typeof p.ssid === 'string') s.ssid = p.ssid;
+        if (typeof p.pass === 'string') s.pass = p.pass;
+        if (p.sec === 'nopass') s.sec = 'nopass';
+        if (typeof p.when === 'string') s.when = p.when;
+        if (typeof p.note === 'string') s.note = p.note;
+        if (p.tally) {
+          GROUPS.forEach(function (g) {
+            g.opts.forEach(function (o) {
+              var n = p.tally[g.id] && p.tally[g.id][o[0]];
+              if (typeof n === 'number' && isFinite(n) && n > 0) s.tally[g.id][o[0]] = Math.floor(n);
+            });
+          });
+        }
+        if (typeof p.since === 'number') s.since = p.since;
+        state = s;
+        if (Array.isArray(p.undo)) s.undo = p.undo.filter(validPair).slice(-60);
+      }
+    } catch (e) { /* storage unavailable: run from memory */ }
+    return s;
+  }
+
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
+  }
+
+  state = load();
+
+  /* ---------- Wi-Fi and QR ---------- */
+  function esc(s) { return String(s).replace(/([\\;,:"])/g, '\\$1'); }
+
+  function wifiString(ssid, pass, open) {
+    if (open) return 'WIFI:T:nopass;S:' + esc(ssid) + ';;';
+    return 'WIFI:T:WPA;S:' + esc(ssid) + ';P:' + esc(pass) + ';;';
+  }
+
+  function qrSvg(text) {
+    if (typeof qrcode !== 'function') return '';
+    var qr = qrcode(0, 'M');
+    qr.addData(text);
+    qr.make();
+    var n = qr.getModuleCount(), m = 2, d = '', r, c;
+    for (r = 0; r < n; r++) {
+      for (c = 0; c < n; c++) {
+        if (qr.isDark(r, c)) d += 'M' + (c + m) + ' ' + (r + m) + 'h1v1h-1z';
+      }
+    }
+    var size = n + m * 2;
+    return '<svg viewBox="0 0 ' + size + ' ' + size + '" role="img" aria-label="QR code to join the Wi-Fi" shape-rendering="crispEdges">' +
+      '<rect width="' + size + '" height="' + size + '" fill="#ffffff"/>' +
+      '<path d="' + d + '" fill="#0e1218"/></svg>';
+  }
+
+  function renderWifi() {
+    var configured = !!state.ssid;
+    var ssid = configured ? state.ssid : 'Your Wi-Fi name';
+    var pass = configured ? state.pass : 'your-password';
+    var open = state.sec === 'nopass' || (configured && !pass);
+    $('ssid').textContent = ssid;
+    $('pass').textContent = pass;
+    $('pass-row').hidden = open;
+    $('wifi').classList.toggle('example', !configured);
+    $('wifi-tag').hidden = configured;
+    var out = '';
+    try { out = qrSvg(wifiString(ssid, pass, open)); } catch (e) { out = ''; }
+    $('qr').innerHTML = out || '<span class="qr-missing">QR code unavailable</span>';
+  }
+
+  function renderWhen() {
+    $('when').textContent = state.when || DEFAULT_WHEN;
+  }
+
+  /* ---------- Board ---------- */
+  var btns = {}, statEls = {}, noteEls = {};
+
+  GROUPS.forEach(function (g) {
+    var wrap = document.createElement('div');
+    wrap.className = 'group';
+    wrap.setAttribute('data-id', g.id);
+
+    var head = document.createElement('div');
+    head.className = 'group-head';
+    var h = document.createElement('h3');
+    h.textContent = g.label;
+    head.appendChild(h);
+    if (g.id === 'dinner') {
+      var note = document.createElement('span');
+      note.className = 'note';
+      head.appendChild(note);
+      noteEls[g.id] = note;
+      var stat = document.createElement('span');
+      stat.className = 'stat';
+      head.appendChild(stat);
+      statEls[g.id] = stat;
+    }
+    wrap.appendChild(head);
+
+    var row = document.createElement('div');
+    row.className = 'opts';
+    g.opts.forEach(function (o) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'opt';
+      var label = document.createElement('span');
+      label.textContent = o[1];
+      var c = document.createElement('span');
+      c.className = 'count';
+      c.hidden = true;
+      c.setAttribute('aria-hidden', 'true');
+      b.appendChild(label);
+      b.appendChild(c);
+      b.addEventListener('click', function () { tap(g.id, o[0]); });
+      row.appendChild(b);
+      btns[g.id + ':' + o[0]] = { btn: b, count: c, label: o[1] };
+    });
+    wrap.appendChild(row);
+    $('groups').appendChild(wrap);
+  });
+
+  function total() {
+    var t = 0;
+    GROUPS.forEach(function (g) { g.opts.forEach(function (o) { t += state.tally[g.id][o[0]]; }); });
+    return t;
+  }
+
+  function sinceText() {
+    if (!state.since) return 'No taps yet this week';
+    try {
+      return 'Counting since ' + new Date(state.since).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' });
+    } catch (e) { return 'Counting taps'; }
+  }
+
+  function renderBoard() {
+    GROUPS.forEach(function (g) {
+      g.opts.forEach(function (o) {
+        var ref = btns[g.id + ':' + o[0]];
+        var n = state.tally[g.id][o[0]];
+        ref.count.textContent = n;
+        ref.count.hidden = n === 0;
+        ref.btn.classList.toggle('has', n > 0);
+        ref.btn.setAttribute('aria-label', ref.label + (n ? ', ' + n + ' so far' : ''));
+      });
+    });
+    var eating = state.tally.dinner.yes + state.tally.dinner.bring;
+    statEls.dinner.textContent = eating ? eating + ' eating' : '';
+    noteEls.dinner.textContent = state.note;
+    $('since').textContent = sinceText();
+    $('undo').disabled = state.undo.length === 0;
+  }
+
+  function pulse(key) {
+    var b = btns[key].btn;
+    b.classList.remove('pulse');
+    void b.offsetWidth;
+    b.classList.add('pulse');
+    setTimeout(function () { b.classList.remove('pulse'); }, 500);
+  }
+
+  function announce(text) {
+    var live = $('live');
+    live.textContent = '';
+    live.textContent = text;
+  }
+
+  function tap(g, o) {
+    state.tally[g][o] += 1;
+    state.undo.push([g, o]);
+    if (state.undo.length > 60) state.undo.shift();
+    if (!state.since) state.since = Date.now();
+    save();
+    renderBoard();
+    pulse(g + ':' + o);
+    announce(btns[g + ':' + o].label + ', ' + state.tally[g][o]);
+  }
+
+  function undo() {
+    var last = state.undo.pop();
+    if (!last) return;
+    var t = state.tally[last[0]];
+    t[last[1]] = Math.max(0, t[last[1]] - 1);
+    if (total() === 0) state.since = null;
+    save();
+    renderBoard();
+    announce('Last tap undone');
+  }
+
+  var armed = false, armTimer = null;
+  function disarm() {
+    armed = false;
+    clearTimeout(armTimer);
+    var r = $('reset');
+    r.classList.remove('armed');
+    r.textContent = 'Reset for next week';
+  }
+
+  function reset() {
+    if (!armed) {
+      armed = true;
+      var r = $('reset');
+      r.classList.add('armed');
+      r.textContent = 'Tap again to clear all';
+      armTimer = setTimeout(disarm, 4000);
+      return;
+    }
+    disarm();
+    state.tally = emptyTally();
+    state.undo = [];
+    state.since = null;
+    save();
+    renderBoard();
+    announce('All counts cleared');
+  }
+
+  $('undo').addEventListener('click', undo);
+  $('reset').addEventListener('click', reset);
+
+  /* ---------- Settings sheet ---------- */
+  var overlay = $('overlay');
+
+  function openSheet() {
+    $('f-ssid').value = state.ssid;
+    $('f-pass').value = state.pass;
+    $('f-sec').value = state.sec;
+    $('f-when').value = state.when;
+    $('f-note').value = state.note;
+    overlay.hidden = false;
+    $('f-ssid').focus();
+  }
+
+  function closeSheet() {
+    overlay.hidden = true;
+    $('gear').focus();
+  }
+
+  $('gear').addEventListener('click', openSheet);
+  $('cancel').addEventListener('click', closeSheet);
+  overlay.addEventListener('click', function (e) { if (e.target === overlay) closeSheet(); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !overlay.hidden) closeSheet();
+  });
+  $('sheet').addEventListener('submit', function (e) {
+    e.preventDefault();
+    state.ssid = $('f-ssid').value.trim();
+    state.pass = $('f-pass').value;
+    state.sec = $('f-sec').value === 'nopass' ? 'nopass' : 'WPA';
+    state.when = $('f-when').value.trim();
+    state.note = $('f-note').value.trim();
+    save();
+    renderWhen();
+    renderWifi();
+    renderBoard();
+    closeSheet();
+  });
+
+  renderWhen();
+  renderWifi();
+  renderBoard();
+})();
+</script>
+
+</body></html>
