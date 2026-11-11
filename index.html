@@ -203,7 +203,7 @@ h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: c
     </div>
     <div id="groups"></div>
     <div class="board-foot">
-      <p class="since" id="since"></p>
+     <!-- Hidden code <p class="since" id="since"></p> -->
       <button class="btn" id="undo" type="button"></button>
       <button class="btn" id="reset" type="button"></button>
       <button class="btn icon" id="gear" type="button" aria-label="Edit this page">
@@ -637,7 +637,7 @@ h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: c
       });
       if (statEls[g.id]) statEls[g.id].textContent = sum ? sum + ' ' + g.totalLabel : '';
     });
-    $('since').textContent = sinceText();
+ // Hidden code   $('since').textContent = sinceText();
     $('undo').disabled = state.undo.length === 0;
   }
 
